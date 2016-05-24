@@ -22,14 +22,14 @@
 
         public AppSettings AppSettings { get; private set; }
 
+        public ColorPalette ColorPalette => colorPalettes[nextColorPalette];
+
+        public Microsoft.Xna.Framework.Graphics.SpriteBatch SpriteBatch => spriteBatch;
+
 
         private GraphicsDeviceManager graphics;
         private SpriteBatch spriteBatch;
-
-        private bool isFullscreen;
-        private Point previousLocation;
-        private Point previousResolution;
-
+        
         private AudioPlayback audioPlayback;
         private AudioAnalyzer audioAnalyzer;
 
@@ -103,6 +103,7 @@
             if (nextVisualization <= visualizations.Count)
             {
                 currentVisualization = visualizations[nextVisualization];
+                currentVisualization.AppShell = this;
             }
 
             Window.Title = string.Format("{0} - {1}", BaseTitleText, currentVisualization.Title);
@@ -128,40 +129,19 @@
             if (keyboardState.IsKeyDown(Keys.Escape))
                 Exit();
 
-            if (keyboardState.IsKeyDown(Keys.Space) &&
-                !pkeyboardState.IsKeyDown(Keys.Space))
+            if (keyboardState.IsKeyDown(Keys.Space) && !pkeyboardState.IsKeyDown(Keys.Space))
             {
                 NextVisualization();
             }
 
-            if (keyboardState.IsKeyDown(Keys.C) &&
-                !pkeyboardState.IsKeyDown(Keys.C))
+            if (keyboardState.IsKeyDown(Keys.C) && !pkeyboardState.IsKeyDown(Keys.C))
             {
                 NextColorPattern();
             }
 
             if (keyboardState.IsKeyDown(Keys.F11) && !pkeyboardState.IsKeyDown(Keys.F11))
             {
-                if (!isFullscreen)
-                {
-                    previousLocation = Window.Position;
-                    previousResolution = new Point(graphics.PreferredBackBufferWidth, graphics.PreferredBackBufferHeight);
-
-                    Window.Position = Point.Zero;
-                    graphics.PreferredBackBufferWidth = GraphicsAdapter.DefaultAdapter.CurrentDisplayMode.Width;
-                    graphics.PreferredBackBufferHeight = GraphicsAdapter.DefaultAdapter.CurrentDisplayMode.Height;
-                }
-                else
-                {
-                    Window.Position = previousLocation;
-                    graphics.PreferredBackBufferWidth = previousResolution.X;
-                    graphics.PreferredBackBufferHeight = previousResolution.Y;
-                }
-
-                graphics.ApplyChanges();
-
-                Window.IsBorderless = !isFullscreen;
-                isFullscreen = !isFullscreen;
+                ToggleBorderless();
             }
 
             pkeyboardState = keyboardState;
@@ -173,9 +153,37 @@
         {
             GraphicsDevice.Clear(colorPalettes[nextColorPalette].Color5);
 
-            currentVisualization.Draw(spriteBatch, this, colorPalettes[nextColorPalette], audioAnalyzer.CurrentAnalyzedAudio);
+            currentVisualization.Draw(audioAnalyzer.CurrentAnalyzedAudio);
 
             base.Draw(gameTime);
+        }
+
+        private bool isFullscreen;
+        private Point previousLocation;
+        private Point previousResolution;
+
+        private void ToggleBorderless()
+        {
+            if (!isFullscreen)
+            {
+                previousLocation = Window.Position;
+                previousResolution = new Point(graphics.PreferredBackBufferWidth, graphics.PreferredBackBufferHeight);
+
+                Window.Position = Point.Zero;
+                graphics.PreferredBackBufferWidth = GraphicsAdapter.DefaultAdapter.CurrentDisplayMode.Width;
+                graphics.PreferredBackBufferHeight = GraphicsAdapter.DefaultAdapter.CurrentDisplayMode.Height;
+            }
+            else
+            {
+                Window.Position = previousLocation;
+                graphics.PreferredBackBufferWidth = previousResolution.X;
+                graphics.PreferredBackBufferHeight = previousResolution.Y;
+            }
+
+            graphics.ApplyChanges();
+
+            Window.IsBorderless = !isFullscreen;
+            isFullscreen = !isFullscreen;
         }
 
         #region Entry Point

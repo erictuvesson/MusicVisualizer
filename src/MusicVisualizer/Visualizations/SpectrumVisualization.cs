@@ -10,15 +10,15 @@
 
         public float Scale = 300.0f;
 
-        public override void Draw(SpriteBatch sp, ApplicationShell shell, ColorPalette colorPalette, Audio.AnalyzedAudio data)
+        public override void Draw(Audio.AnalyzedAudio data)
         {
-            sp.Begin();
+            SpriteBatch.Begin();
 
             int pointSamples = data.FFT.Length;
             if (data.SmoothFFT.Length >= pointSamples)
             {
-                float centerHeight = shell.Height / 2.0f;
-                float sampleWidth = shell.Width / (float)pointSamples;
+                float centerHeight = AppShell.Height / 2.0f;
+                float sampleWidth = AppShell.Width / (float)pointSamples;
 
                 float currentX = 0;
                 for (int i = 0; i < pointSamples; i++)
@@ -30,24 +30,24 @@
                     if (i + 1 < pointSamples)
                         nextData = data.FFT[i + 1].X * Scale;
 
-                    sp.DrawLine(
+                    SpriteBatch.DrawLine(
                         new Vector2(currentX, centerHeight + currentData),
-                        new Vector2(nextX, centerHeight + nextData), colorPalette.Color2);
+                        new Vector2(nextX, centerHeight + nextData), AppShell.ColorPalette.Color2);
 
                     float currentSmoothData = data.SmoothFFT[i].X * Scale;
                     float nextSmoothData = currentSmoothData;
                     if (i + 1 < pointSamples)
                         nextSmoothData = data.SmoothFFT[i + 1].X * Scale;
 
-                    sp.DrawLine(
+                    SpriteBatch.DrawLine(
                         new Vector2(currentX, centerHeight + currentSmoothData),
-                        new Vector2(nextX, centerHeight + nextSmoothData), colorPalette.Color3);
+                        new Vector2(nextX, centerHeight + nextSmoothData), AppShell.ColorPalette.Color3);
 
                     currentX = nextX;
                 }
             }
 
-            sp.End();
+            SpriteBatch.End();
         }
     }
 }

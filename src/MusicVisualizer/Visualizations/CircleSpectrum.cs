@@ -19,9 +19,9 @@
 
         private int ActualPoints => points.Length - 1;
 
-        public override void Draw(SpriteBatch sp, ApplicationShell shell, ColorPalette colorPalette, Audio.AnalyzedAudio data)
+        public override void Draw(Audio.AnalyzedAudio data)
         {
-            sp.Begin();
+            SpriteBatch.Begin();
 
             int pointSamples = data.FFT.Length;
             if (data.SmoothFFT.Length >= pointSamples)
@@ -42,8 +42,8 @@
                     }
                 }
 
-                float centerWidth = shell.Width / 2.0f;
-                float centerHeight = shell.Height / 2.0f;
+                float centerWidth = AppShell.Width / 2.0f;
+                float centerHeight = AppShell.Height / 2.0f;
 
                 Vector2 centerScreen = new Vector2(centerWidth, centerHeight);
                 for (int i = 0; i < ActualPoints; i++)
@@ -58,16 +58,16 @@
                     Vector2 start = centerScreen + current + (pointsNormals[i] * data.FFT[i].X * Scale);
                     Vector2 end = centerScreen + next + (pointsNormals[nextIndex] * data.FFT[nextIndex].X * Scale);
 
-                    sp.DrawLine(start, end, colorPalette.Color2);
+                    SpriteBatch.DrawLine(start, end, AppShell.ColorPalette.Color2);
 
                     Vector2 smoothStart = centerScreen + current + (pointsNormals[i] * data.SmoothFFT[i].X * Scale);
                     Vector2 smoothEnd = centerScreen + next + (pointsNormals[nextIndex] * data.SmoothFFT[nextIndex].X * Scale);
 
-                    sp.DrawLine(smoothStart, smoothEnd, colorPalette.Color3);
+                    SpriteBatch.DrawLine(smoothStart, smoothEnd, AppShell.ColorPalette.Color3);
                 }
             }
 
-            sp.End();
+            SpriteBatch.End();
         }
 
         private int GetPointIndex(int index, int offset)

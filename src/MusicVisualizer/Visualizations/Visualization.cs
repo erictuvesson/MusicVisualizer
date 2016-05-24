@@ -4,6 +4,10 @@
     {
         public abstract string Title { get; }
 
-        public abstract void Draw(Microsoft.Xna.Framework.Graphics.SpriteBatch sp, ApplicationShell shell, ColorPalette colorPalette, Audio.AnalyzedAudio data);
+        public ApplicationShell AppShell { get; internal set; }
+
+        protected Microsoft.Xna.Framework.Graphics.SpriteBatch SpriteBatch => AppShell.SpriteBatch;
+
+        public abstract void Draw(Audio.AnalyzedAudio data);
     }
 }
