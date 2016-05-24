@@ -1,6 +1,6 @@
 ﻿namespace MusicVisualizer
 {
-    public interface ApplicationShell
+    public interface IApplicationShell
     {
         int Width { get; }
         int Height { get; }
@@ -10,5 +10,6 @@
         ColorPalette ColorPalette { get; }
 
         Microsoft.Xna.Framework.Graphics.SpriteBatch SpriteBatch { get; }
+        Microsoft.Xna.Framework.Graphics.SpriteFont Font { get; }
     }
 }

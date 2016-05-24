@@ -5,21 +5,17 @@
 
     public class AudioPlayback : IDisposable
     {
+        public event EventHandler<FftEventArgs> FftCalculated;
+        public event EventHandler<MaxSampleEventArgs> MaximumCalculated;
+
         private IWavePlayer playbackDevice;
         private WaveStream fileStream;
 
-        public event EventHandler<FftEventArgs> FftCalculated;
+        private readonly IApplicationShell appShell;
 
-        protected virtual void OnFftCalculated(FftEventArgs e)
+        public AudioPlayback(IApplicationShell appShell)
         {
-            FftCalculated?.Invoke(this, e);
-        }
-
-        public event EventHandler<MaxSampleEventArgs> MaximumCalculated;
-
-        protected virtual void OnMaximumCalculated(MaxSampleEventArgs e)
-        {
-            MaximumCalculated?.Invoke(this, e);
+            this.appShell = appShell;
         }
 
         public void Load(string fileName)
@@ -28,6 +24,16 @@
             CloseFile();
             EnsureDeviceCreated();
             OpenFile(fileName);
+        }
+
+        protected virtual void OnFftCalculated(FftEventArgs e)
+        {
+            FftCalculated?.Invoke(this, e);
+        }
+
+        protected virtual void OnMaximumCalculated(MaxSampleEventArgs e)
+        {
+            MaximumCalculated?.Invoke(this, e);
         }
 
         private void CloseFile()
@@ -45,7 +51,7 @@
             {
                 var inputStream = new AudioFileReader(fileName);
                 fileStream = inputStream;
-                var aggregator = new SampleAggregator(inputStream, 4096 * 2);
+                var aggregator = new SampleAggregator(inputStream, appShell.AppSettings.FFTLength);
                 aggregator.NotificationCount = inputStream.WaveFormat.SampleRate / 100;
                 aggregator.PerformFFT = true;
                 aggregator.FftCalculated += (s, a) => OnFftCalculated(a);

@@ -1,8 +1,6 @@
 ﻿namespace MusicVisualizer.Audio
 {
     using System;
-    using System.Collections.Generic;
-    using System.Text;
     using System.Diagnostics;
     using NAudio.Dsp;
     using NAudio.Wave;
@@ -75,10 +73,7 @@
             count++;
             if (count >= NotificationCount && NotificationCount > 0)
             {
-                if (MaximumCalculated != null)
-                {
-                    MaximumCalculated(this, new MaxSampleEventArgs(minValue, maxValue));
-                }
+                MaximumCalculated?.Invoke(this, new MaxSampleEventArgs(minValue, maxValue));
                 Reset();
             }
         }

@@ -11,8 +11,8 @@
     using Audio;
     using Visualizations;
     using Newtonsoft.Json;
-    
-    public class Game1 : Game, ApplicationShell
+    using System.IO;
+    public class Game1 : Game, IApplicationShell
     {
         static string BaseTitleText = "Music Visualization";
 
@@ -25,10 +25,12 @@
         public ColorPalette ColorPalette => colorPalettes[nextColorPalette];
 
         public Microsoft.Xna.Framework.Graphics.SpriteBatch SpriteBatch => spriteBatch;
+        public Microsoft.Xna.Framework.Graphics.SpriteFont Font => font;
 
 
         private GraphicsDeviceManager graphics;
         private SpriteBatch spriteBatch;
+        private SpriteFont font;
         
         private AudioPlayback audioPlayback;
         private AudioAnalyzer audioAnalyzer;
@@ -41,6 +43,8 @@
         private Visualization currentVisualization;
 
         private KeyboardState pkeyboardState;
+
+        private GameConsole gameConsole;
 
         public Game1()
         {
@@ -60,10 +64,17 @@
 
             AppSettings = new AppSettings(4096 * 2);
         }
-        
+
+        protected override void Initialize()
+        {
+            Components.Add(gameConsole = new GameConsole(this));
+            base.Initialize();
+        }
+
         protected override void LoadContent()
         {
             this.spriteBatch = new SpriteBatch(GraphicsDevice);
+            this.font = Content.Load<SpriteFont>("Content/Consolas");
 
             /// Color Palettes
 
@@ -91,20 +102,30 @@
 
             /// Audio
             
-            this.audioPlayback = new AudioPlayback();
+            this.audioPlayback = new AudioPlayback(this);
             this.audioAnalyzer = new AudioAnalyzer(audioPlayback);
-            
-            this.audioPlayback.Load(@"Song.mp3");
+
+            var songPath = @"Song.mp3";
+
+            this.audioPlayback.Load(songPath);
             this.audioPlayback.Play();
+
+            gameConsole.WriteLine($"-- Playing {Path.GetFileNameWithoutExtension(songPath)}", Color.White, TimeSpan.FromSeconds(10));
         }
 
         private void NextVisualization()
         {
             if (nextVisualization <= visualizations.Count)
             {
+                currentVisualization?.OutView();
+
                 currentVisualization = visualizations[nextVisualization];
                 currentVisualization.AppShell = this;
+
+                currentVisualization.InView();
             }
+
+            gameConsole.WriteLine($"-- Visualization, {currentVisualization.Title}", ColorPalette.Color1);
 
             Window.Title = string.Format("{0} - {1}", BaseTitleText, currentVisualization.Title);
             nextVisualization = (nextVisualization + 1) % visualizations.Count;
@@ -113,6 +134,7 @@
         private void NextColorPattern()
         {
             nextColorPalette = (nextColorPalette + 1) % colorPalettes.Count;
+            gameConsole.WriteLine($"-- ColorPalette, {ColorPalette.Name}", ColorPalette.Color1);
         }
 
         protected override void UnloadContent()

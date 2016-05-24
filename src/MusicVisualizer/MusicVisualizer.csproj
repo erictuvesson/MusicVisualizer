@@ -42,7 +42,8 @@
     <ApplicationIcon>Icon.ico</ApplicationIcon>
   </PropertyGroup>
   <ItemGroup>
-    <Compile Include="ApplicationShell.cs" />
+    <Compile Include="GameConsole.cs" />
+    <Compile Include="IApplicationShell.cs" />
     <Compile Include="AppSettings.cs" />
     <Compile Include="Audio\AudioAnalyzer.cs" />
     <Compile Include="Audio\AudioPlayback.cs" />
@@ -83,6 +84,7 @@
     <None Include="Content\ColorPalettes.json">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
+    <None Include="Content\Consolas.spritefont" />
     <None Include="packages.config" />
   </ItemGroup>
   <ItemGroup />
