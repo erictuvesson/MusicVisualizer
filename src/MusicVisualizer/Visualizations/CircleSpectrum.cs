@@ -21,18 +21,16 @@
             {
                 if (value < 1.0f) value = 1.0f;
                 radius = value;
-                dirty = true;
             }
         }
         private float radius;
 
         public float Min = -1.0f;
         public float Max = 1.0f;
-        
-        private Vector2[] points;
-        private Vector2[] pointsNormals;
-        
-        private bool dirty = true;
+
+        private VertexPositionColor[] vertices1;
+        private VertexPositionColor[] vertices2;
+        private BasicEffect basicEffect;
 
         /// <summary>
         /// 
@@ -42,70 +40,56 @@
             this.Radius = 150.0f;
         }
 
-        public override void Draw(Audio.AnalyzedAudio data)
+        public override void InView()
         {
-            SpriteBatch.Begin();
+            basicEffect = new BasicEffect(AppShell.GraphicsDevice);
+            basicEffect.VertexColorEnabled = true;
+            basicEffect.World = Matrix.Identity;
 
-            int pointSamples = data.FFT.Length;
-            if (data.SmoothFFT.Length >= pointSamples)
-            {
-                if (points == null || dirty)
-                {
-                    const double max = 2.0 * Math.PI;
-                    double step = max / pointSamples;
-
-                    points = new Vector2[pointSamples + 1];
-                    pointsNormals = new Vector2[pointSamples + 1];
-
-                    int i = 0;
-                    for (double theta = 0.0; theta < max; theta += step, i++)
-                    {
-                        points[i] = new Vector2((float)(Radius * Math.Cos(theta)), (float)(Radius * Math.Sin(theta)));
-                        pointsNormals[i] = new Vector2((float)((Radius + 1) * Math.Cos(theta)), (float)((Radius + 1) * Math.Sin(theta)));
-                    }
-
-                    dirty = false;
-                }
-
-                float centerWidth = AppShell.Width / 2.0f;
-                float centerHeight = AppShell.Height / 2.0f;
-
-                Vector2 centerScreen = new Vector2(centerWidth, centerHeight);
-                for (int i = 0; i < points.Length - 1; i++)
-                {
-                    int prevIndex = GetPointIndex(i, -1);
-                    int nextIndex = GetPointIndex(i, 1);
-
-                    Vector2 previous = points[prevIndex];
-                    Vector2 current = points[i];
-                    Vector2 next = points[nextIndex];
-
-                    float cfft = MathHelper.Clamp(data.FFT[i].X, Min, Max);
-                    float nfft = MathHelper.Clamp(data.FFT[nextIndex].X, Min, Max);
-                    
-                    Vector2 start = centerScreen + current + (pointsNormals[i] * cfft);
-                    Vector2 end = centerScreen + next + (pointsNormals[nextIndex] * nfft);
-
-                    SpriteBatch.DrawLine(start, end, AppShell.ColorPalette.Color2);
-
-                    float scfft = MathHelper.Clamp(data.SmoothFFT[i].X, Min, Max);
-                    float snfft = MathHelper.Clamp(data.SmoothFFT[nextIndex].X, Min, Max);
-
-                    Vector2 smoothStart = centerScreen + current + (pointsNormals[i] * scfft);
-                    Vector2 smoothEnd = centerScreen + next + (pointsNormals[nextIndex] * snfft);
-
-                    SpriteBatch.DrawLine(smoothStart, smoothEnd, AppShell.ColorPalette.Color3);
-                }
-            }
-
-            SpriteBatch.End();
+            base.InView();
         }
 
-        private int GetPointIndex(int index, int offset)
+        public override void Draw(Audio.AnalyzedAudio data)
         {
-            if (offset < 0)
-                return (index - offset + points.Length - 1) % (points.Length - 1);
-            return (index + offset) % (points.Length - 1);
+            int pointSamples = data.FFT.Length;
+            if (vertices1 == null || vertices2 == null) // TODO: If change
+            {
+                vertices1 = new VertexPositionColor[pointSamples];
+                vertices2 = new VertexPositionColor[pointSamples];
+            }
+
+            const double max = 2.0 * Math.PI;
+            double step = max / (pointSamples - 1);
+
+            int i = 0;
+            for (double theta = 0.0; theta < max; theta += step, i++)
+            {
+                var currentPosition = new Vector3((float)(Radius * Math.Cos(theta)), (float)(Radius * Math.Sin(theta)), 0);
+                var currentNormal = new Vector3((float)((Radius + 1) * Math.Cos(theta)), (float)((Radius + 1) * Math.Sin(theta)), 0);
+
+                float fft = MathHelper.Clamp(data.FFT[i].X, Min, Max);
+
+                vertices1[i].Position = currentPosition + (currentNormal * fft);
+                vertices1[i].Color = AppShell.ColorPalette.Color3;
+
+                float sfft = MathHelper.Clamp(data.SmoothFFT[i].X, Min, Max);
+
+                vertices2[i].Position = currentPosition + (currentNormal * sfft);
+                vertices2[i].Color = AppShell.ColorPalette.Color2;
+            }
+
+            var View = Matrix.Identity;
+            var Projection = Matrix.CreateOrthographic(AppShell.Width, AppShell.Height, -1.0f, 1.0f);
+            
+            basicEffect.View = View;
+            basicEffect.Projection = Projection;
+
+            foreach (EffectPass pass in basicEffect.CurrentTechnique.Passes)
+            {
+                pass.Apply();
+                AppShell.GraphicsDevice.DrawUserPrimitives(PrimitiveType.LineStrip, vertices1, 0, vertices1.Length - 1, VertexPositionColor.VertexDeclaration);
+                AppShell.GraphicsDevice.DrawUserPrimitives(PrimitiveType.LineStrip, vertices2, 0, vertices2.Length - 1, VertexPositionColor.VertexDeclaration);
+            }
         }
     }
 }

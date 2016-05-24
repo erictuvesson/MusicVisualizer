@@ -7,11 +7,12 @@
     using System.Reflection;
     using System.Linq;
     using System;
+    using Newtonsoft.Json;
+    using System.IO;
 
     using Audio;
     using Visualizations;
-    using Newtonsoft.Json;
-    using System.IO;
+
     public class Game1 : Game, IApplicationShell
     {
         static string BaseTitleText = "Music Visualization";
@@ -24,6 +25,7 @@
 
         public ColorPalette ColorPalette => colorPalettes[nextColorPalette];
 
+        Microsoft.Xna.Framework.Graphics.GraphicsDevice IApplicationShell.GraphicsDevice => GraphicsDevice;
         public Microsoft.Xna.Framework.Graphics.SpriteBatch SpriteBatch => spriteBatch;
         public Microsoft.Xna.Framework.Graphics.SpriteFont Font => font;
 
