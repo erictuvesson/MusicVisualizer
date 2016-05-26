@@ -56,8 +56,8 @@
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Shapes.cs" />
     <Compile Include="Visualizations\CircleSnakesVisualization.cs" />
-    <Compile Include="Visualizations\CircleSpectrumVisualization.cs" />
-    <Compile Include="Visualizations\SpectrumVisualization.cs" />
+    <Compile Include="Visualizations\CircleWaveformVisualization.cs" />
+    <Compile Include="Visualizations\WaveformVisualization.cs" />
     <Compile Include="Visualizations\TestShape.cs" />
     <Compile Include="Visualizations\ThicklinesVisualization.cs" />
     <Compile Include="Visualizations\Visualization.cs" />
