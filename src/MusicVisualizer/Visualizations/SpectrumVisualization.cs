@@ -26,7 +26,7 @@
             base.InView();
         }
 
-        public override void Draw(Audio.AnalyzedAudio data)
+        public override void Draw(GameTime gameTime, Audio.AnalyzedAudio data)
         {
             int pointSamples = data.FFT.Length;
             if (vertices1 == null || vertices2 == null) // TODO: If change

@@ -18,6 +18,11 @@
 
         }
 
-        public abstract void Draw(Audio.AnalyzedAudio data);
+        public virtual void Update(Input input)
+        {
+
+        }
+
+        public abstract void Draw(Microsoft.Xna.Framework.GameTime gameTime, Audio.AnalyzedAudio data);
     }
 }

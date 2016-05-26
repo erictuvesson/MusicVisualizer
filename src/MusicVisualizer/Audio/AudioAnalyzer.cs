@@ -80,6 +80,8 @@
             this.audioPlayback.MaximumCalculated += audioGraph_MaximumCalculated;
             this.audioPlayback.FftCalculated += audioGraph_FftCalculated;
 
+            // TODO: If the sound stops it stops raporting the data
+
             this.threadRunning = true;
             this.thread = new Thread(new ThreadStart(thread_run));
             this.thread.Start();
@@ -115,7 +117,7 @@
 
                         for (int i = 0; i < lastFFT.Length; i++)
                         {
-                            var smoothX = MathHelper.Lerp(smoothFFT[i].X, lastFFT[i].X, FFTSmoothness);
+                            var smoothX = MathHelper.Lerp(smoothFFT[i].X, lastFFT[i].X, FFTSmoothness); // TODO: Time
                             var smoothY = MathHelper.Lerp(smoothFFT[i].Y, lastFFT[i].Y, FFTSmoothness);
                             smoothFFT[i] = new ComplexValue(smoothX, smoothY);
 

@@ -20,5 +20,19 @@
         {
             return color.R.ToString("X2") + color.G.ToString("X2") + color.B.ToString("X2");
         }
+
+        /// <summary> Return evenly spaced values within a given interval. </summary>
+        public static float[] Arange(float start, float stop, float step)
+        {
+            int num = (int)((stop - start) / step);
+
+            var result = new float[num];
+            for (int i = 0; i < num; i++)
+            {
+                result[i] = start + step * i;
+            }
+
+            return result;
+        }
     }
 }

@@ -28,12 +28,13 @@
         Microsoft.Xna.Framework.Graphics.GraphicsDevice IApplicationShell.GraphicsDevice => GraphicsDevice;
         public Microsoft.Xna.Framework.Graphics.SpriteBatch SpriteBatch => spriteBatch;
         public Microsoft.Xna.Framework.Graphics.SpriteFont Font => font;
-
-
+        public Microsoft.Xna.Framework.Graphics.BasicEffect BasicEffect => basicEffect;
+        
         private GraphicsDeviceManager graphics;
         private SpriteBatch spriteBatch;
         private SpriteFont font;
-        
+        private BasicEffect basicEffect;
+                
         private AudioPlayback audioPlayback;
         private AudioAnalyzer audioAnalyzer;
 
@@ -47,6 +48,7 @@
         private KeyboardState pkeyboardState;
 
         private GameConsole gameConsole;
+        private Input input;
 
         public Game1()
         {
@@ -78,6 +80,12 @@
             this.spriteBatch = new SpriteBatch(GraphicsDevice);
             this.font = Content.Load<SpriteFont>("Content/Consolas");
 
+            this.basicEffect = new BasicEffect(GraphicsDevice);
+            this.basicEffect.VertexColorEnabled = true;
+            this.basicEffect.World = Matrix.Identity;
+
+            this.input = new Input();
+
             /// Color Palettes
 
             var inputColorPalettesJson = System.IO.File.ReadAllText("Content/ColorPalettes.json"); // TODO: Make safe
@@ -97,8 +105,18 @@
             visualizations = new List<Visualization>();
             visualizations.AddRange(
                 from type in Assembly.GetExecutingAssembly().GetTypes().OrderBy(x => x.Name)
-                where type.IsSubclassOf(typeof(Visualization))
+                where type.IsSubclassOf(typeof(Visualization)) && type.GetCustomAttribute<ObsoleteAttribute>() == null
                 select (Visualization)Activator.CreateInstance(type));
+
+            // Experimental Visualizations
+            //visualizations = new List<Visualization>(
+            //    new Visualization[]
+            //    {
+            //        new TestShape(),
+            //        new CircleSnakesVisualization(),
+            //        new ThicklinesVisualization(),
+            //        new WavesVisualization()
+            //    });
 
             NextVisualization();
 
@@ -106,8 +124,21 @@
             
             this.audioPlayback = new AudioPlayback(this);
             this.audioAnalyzer = new AudioAnalyzer(audioPlayback);
+            
+#if DEBUG
+            var songPath = @"F:\Music\ODESZA - Sun Models (feat. Madelyn Grant).mp3";
+#else
+            var openFileDialog = new System.Windows.Forms.OpenFileDialog();
+            openFileDialog.Filter = "All Supported Files (*.wav;*.mp3)|*.wav;*.mp3|All Files (*.*)|*.*";
 
-            var songPath = @"Song.mp3";
+            var result = openFileDialog.ShowDialog();
+            if (result != System.Windows.Forms.DialogResult.OK)
+            {
+                Exit();
+            }
+
+            var songPath = openFileDialog.FileName;
+#endif
 
             this.audioPlayback.Load(songPath);
             this.audioPlayback.Play();
@@ -148,27 +179,32 @@
 
         protected override void Update(GameTime gameTime)
         {
-            var keyboardState = Keyboard.GetState();
+            input.currentKeybardState = Keyboard.GetState();
 
-            if (keyboardState.IsKeyDown(Keys.Escape))
+            if (input.IsNewKeyDown(Keys.Escape))
+            {
                 Exit();
+            }
 
-            if (keyboardState.IsKeyDown(Keys.Space) && !pkeyboardState.IsKeyDown(Keys.Space))
+            if (input.IsNewKeyDown(Keys.Space))
             {
                 NextVisualization();
             }
 
-            if (keyboardState.IsKeyDown(Keys.C) && !pkeyboardState.IsKeyDown(Keys.C))
+            if (input.IsNewKeyDown(Keys.C))
             {
                 NextColorPattern();
             }
 
-            if (keyboardState.IsKeyDown(Keys.F11) && !pkeyboardState.IsKeyDown(Keys.F11))
+            if (input.IsNewKeyDown(Keys.F11))
             {
                 ToggleBorderless();
             }
 
-            pkeyboardState = keyboardState;
+            if (currentVisualization != null)
+                currentVisualization.Update(input);
+
+            input.previousKeyboardState = input.currentKeybardState;
 
             base.Update(gameTime);
         }
@@ -177,7 +213,10 @@
         {
             GraphicsDevice.Clear(colorPalettes[nextColorPalette].Color5);
 
-            currentVisualization.Draw(audioAnalyzer.CurrentAnalyzedAudio);
+            if (audioAnalyzer.CurrentAnalyzedAudio.FFT != null)
+            {
+                currentVisualization.Draw(gameTime, audioAnalyzer.CurrentAnalyzedAudio);
+            }
 
             base.Draw(gameTime);
         }
@@ -210,7 +249,7 @@
             isFullscreen = !isFullscreen;
         }
 
-        #region Entry Point
+#region Entry Point
 #if WINDOWS || LINUX
         [STAThread]
         static void Main()
@@ -219,6 +258,6 @@
                 game.Run();
         }
 #endif
-        #endregion
+#endregion
     }
 }
