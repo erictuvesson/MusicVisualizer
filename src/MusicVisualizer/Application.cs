@@ -37,6 +37,8 @@
         private int nextVisualization;
         private Visualization currentVisualization;
 
+        private PythonManager pyManager;
+
         public Application()
             : base(1280, 900)
         {
@@ -92,18 +94,20 @@
             visualizations = new List<Visualization>();
             visualizations.AddRange(
                 from type in Assembly.GetExecutingAssembly().GetTypes().OrderBy(x => x.Name)
-                where type.IsSubclassOf(typeof(Visualization)) && type.GetCustomAttribute<ObsoleteAttribute>() == null
+                where  type.IsSubclassOf(typeof(Visualization)) 
+                    && type.GetCustomAttribute<ObsoleteAttribute>() == null
+                    && type != typeof(PythonVisualization)
                 select (Visualization)Activator.CreateInstance(type));
 
+            pyManager = new PythonManager(this);
+
             // Experimental Visualizations
-            //visualizations = new List<Visualization>(
-            //    new Visualization[]
-            //    {
-            //        new TestShape(),
-            //        new CircleSnakesVisualization(),
-            //        new ThicklinesVisualization(),
-            //        new WavesVisualization()
-            //    });
+            visualizations = new List<Visualization>(
+                new Visualization[]
+                {
+                    new WaveformVisualization(),
+                    pyManager.CreateVisualization("Python/WaveFormVisualizers.py", "WaveFormVisualizer"),
+                });
 
             NextVisualization();
 

@@ -45,6 +45,21 @@
             this.SmoothFFT = smoothFft;
             this.Samples = samples;
         }
+
+        public int FFTLength()
+        {
+            return FFT.Length;
+        }
+
+        public float GetSmoothFFT(int index)
+        {
+            return SmoothFFT[index].X;
+        }
+
+        public float GetRoughFFT(int index)
+        {
+            return FFT[index].X;
+        }
     }
 
     public class AudioAnalyzer : IDisposable
