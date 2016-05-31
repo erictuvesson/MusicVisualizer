@@ -1,9 +1,11 @@
 ﻿namespace MusicVisualizer
 {
-    using Microsoft.Xna.Framework;
-    using System.Diagnostics;
+    using Color = OpenTK.Graphics.Color4;
 
-    [DebuggerDisplay("<{Name}, {Color1}, {Color2}, {Color3}, {Color4}, {Color5}>")]
+    /// <summary>
+    /// Defines a color palette.
+    /// </summary>
+    [System.Diagnostics.DebuggerDisplay("<{Name}, {Color1}, {Color2}, {Color3}, {Color4}, {Color5}>")]
     public struct ColorPalette
     {
         public readonly string Name;

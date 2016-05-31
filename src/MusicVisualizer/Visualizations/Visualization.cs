@@ -5,24 +5,9 @@
         public abstract string Title { get; }
 
         public IApplicationShell AppShell { get; internal set; }
+        
+        public virtual void OnKeyDown(OpenTK.Input.KeyboardKeyEventArgs e) { }
 
-        protected Microsoft.Xna.Framework.Graphics.SpriteBatch SpriteBatch => AppShell.SpriteBatch;
-
-        public virtual void InView()
-        {
-
-        }
-
-        public virtual void OutView()
-        {
-
-        }
-
-        public virtual void Update(Input input)
-        {
-
-        }
-
-        public abstract void Draw(Microsoft.Xna.Framework.GameTime gameTime, Audio.AnalyzedAudio data);
+        public abstract void Draw(float elapsedTime, Audio.AnalyzedAudio data);
     }
 }

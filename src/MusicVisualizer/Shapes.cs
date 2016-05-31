@@ -1,6 +1,6 @@
 ﻿namespace MusicVisualizer
 {
-    using Microsoft.Xna.Framework;
+    using OpenTK;
     using System;
 
     static class Shapes

@@ -1,9 +1,10 @@
 ﻿namespace MusicVisualizer.Visualizations
 {
-    using Microsoft.Xna.Framework;
-    using Microsoft.Xna.Framework.Graphics;
     using System;
-    
+    using Audio;
+    using Graphics;
+    using OpenTK;
+
     public class CircleWaveformVisualization : Visualization
     {
         public override string Title => "Circle Waveform";
@@ -20,75 +21,57 @@
                 radius = value;
             }
         }
-        private float radius;
+        private float radius = 150.0f;
 
         public float Scale = 150.0f;
 
         public float Min = -1.0f;
         public float Max = 1.0f;
 
-        private VertexPositionColor[] vertices1;
-        private VertexPositionColor[] vertices2;
+        private Line Line1;
+        private Line Line2;
         private BasicEffect basicEffect;
 
-        /// <summary>
-        /// 
-        /// </summary>
         public CircleWaveformVisualization()
         {
-            this.Radius = 150.0f;
+            basicEffect = new BasicEffect();
+            Line1 = new Line();
+            Line2 = new Line();
+            Line1.LoopLines = true;
+            Line2.LoopLines = true;
         }
 
-        public override void InView()
-        {
-            basicEffect = new BasicEffect(AppShell.GraphicsDevice);
-            basicEffect.VertexColorEnabled = true;
-            basicEffect.World = Matrix.Identity;
-
-            base.InView();
-        }
-
-        public override void Draw(GameTime gameTime, Audio.AnalyzedAudio data)
+        public override void Draw(float elapsedTime, AnalyzedAudio data)
         {
             int pointSamples = data.FFT.Length;
-            if (vertices1 == null || vertices2 == null) // TODO: If change
-            {
-                vertices1 = new VertexPositionColor[pointSamples];
-                vertices2 = new VertexPositionColor[pointSamples];
-            }
+            int targetSamples = MathHelper.Clamp(pointSamples, 0, AppShell.Width);
+            int sampleStep = pointSamples / targetSamples;
+
+            Line1.Resize(targetSamples);
+            Line2.Resize(targetSamples);
 
             const double max = 2.0 * Math.PI;
-            double step = max / (pointSamples - 1);
+            double step = max / targetSamples;
+
+            var center = new Vector2(AppShell.Width / 2, AppShell.Height / 2);
 
             int i = 0;
             for (double theta = 0.0; theta < max; theta += step, i++)
             {
-                var currentPosition = new Vector3((float)(Radius * Math.Cos(theta)), (float)(Radius * Math.Sin(theta)), 0);
-                var currentNormal = currentPosition - new Vector3((float)((Radius + 1) * Math.Cos(theta)), (float)((Radius + 1) * Math.Sin(theta)), 0);
+                var currentPosition = new Vector2((float)(Radius * Math.Cos(theta)), (float)(Radius * Math.Sin(theta)));
+                var currentNormal = currentPosition - new Vector2((float)((Radius + 1) * Math.Cos(theta)), (float)((Radius + 1) * Math.Sin(theta)));
 
                 float fft = MathHelper.Clamp(data.FFT[i].X, Min, Max);
-
-                vertices1[i].Position = currentPosition + (currentNormal * Scale * fft);
-                vertices1[i].Color = AppShell.ColorPalette.Color3;
-
                 float sfft = MathHelper.Clamp(data.SmoothFFT[i].X, Min, Max);
 
-                vertices2[i].Position = currentPosition + (currentNormal * Scale * sfft);
-                vertices2[i].Color = AppShell.ColorPalette.Color2;
+                Line1.SetAtPosition(i, center + currentPosition + (currentNormal * Scale * fft), AppShell.ColorPalette.Color3);
+                Line2.SetAtPosition(i, center + currentPosition + (currentNormal * Scale * sfft), AppShell.ColorPalette.Color2);
             }
 
-            var View = Matrix.Identity;
-            var Projection = Matrix.CreateOrthographic(AppShell.Width, AppShell.Height, -1.0f, 1.0f);
-            
-            basicEffect.View = View;
-            basicEffect.Projection = Projection;
+            var transform = Matrix4.CreateOrthographicOffCenter(0, AppShell.Width, AppShell.Height, 0, -1.0f, 1.0f);
 
-            foreach (EffectPass pass in basicEffect.CurrentTechnique.Passes)
-            {
-                pass.Apply();
-                AppShell.GraphicsDevice.DrawUserPrimitives(PrimitiveType.LineStrip, vertices1, 0, vertices1.Length - 1, VertexPositionColor.VertexDeclaration);
-                AppShell.GraphicsDevice.DrawUserPrimitives(PrimitiveType.LineStrip, vertices2, 0, vertices2.Length - 1, VertexPositionColor.VertexDeclaration);
-            }
+            Line1.Draw(basicEffect, transform);
+            Line2.Draw(basicEffect, transform);
         }
     }
 }

@@ -8,10 +8,5 @@
         AppSettings AppSettings { get; }
 
         ColorPalette ColorPalette { get; }
-
-        Microsoft.Xna.Framework.Graphics.GraphicsDevice GraphicsDevice { get; }
-        Microsoft.Xna.Framework.Graphics.SpriteBatch SpriteBatch { get; }
-        Microsoft.Xna.Framework.Graphics.SpriteFont Font { get; }
-        Microsoft.Xna.Framework.Graphics.BasicEffect BasicEffect { get; }
     }
 }

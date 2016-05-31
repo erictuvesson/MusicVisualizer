@@ -6,7 +6,6 @@
     using System.Collections.Generic;
     using System.Threading;
     using System.Linq;
-    using Microsoft.Xna.Framework;
     using System.Diagnostics;
 
     public struct ComplexValue
@@ -117,8 +116,8 @@
 
                         for (int i = 0; i < lastFFT.Length; i++)
                         {
-                            var smoothX = MathHelper.Lerp(smoothFFT[i].X, lastFFT[i].X, FFTSmoothness); // TODO: Time
-                            var smoothY = MathHelper.Lerp(smoothFFT[i].Y, lastFFT[i].Y, FFTSmoothness);
+                            var smoothX = Helper.Lerp(smoothFFT[i].X, lastFFT[i].X, FFTSmoothness); // TODO: Time
+                            var smoothY = Helper.Lerp(smoothFFT[i].Y, lastFFT[i].Y, FFTSmoothness);
                             smoothFFT[i] = new ComplexValue(smoothX, smoothY);
 
                             lastFFT2[i] = new ComplexValue(lastFFT[i].X, lastFFT[i].Y);
